@@ -1,12 +1,12 @@
-name: Aggiornamento automatico repository
+name: Aggiornamento automatico completo
 
 on:
   schedule:
-    - cron: '0 9 * * *'  # Ogni giorno alle 9:00 AM (puoi modificare l'orario)
+    - cron: '0 9 * * *'  # Esegui ogni giorno alle 9:00 AM
   workflow_dispatch:
 
 jobs:
-  update-repo:
+  daily-update:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -14,11 +14,29 @@ jobs:
         with:
           token: ${{ secrets.GH_TOKEN }}
 
-      - name: Aggiorna file automaticamente
+      - name: Imposta autore per i commit
         run: |
-          echo "Aggiornamento automatico eseguito il $(date)" >> aggiornamento.txt
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add aggiornamento.txt
-          git commit -m "Aggiornamento automatico - $(date)" || echo "Nessuna modifica da salvare"
+
+      - name: Aggiorna README con data e ora
+        run: |
+          echo "\nUltimo aggiornamento: $(date '+%Y-%m-%d %H:%M:%S')" >> README.md
+
+      - name: Crea/aggiorna file giornaliero di log
+        run: |
+          echo "Aggiornamento del $(date '+%Y-%m-%d %H:%M:%S')" >> logs/aggiornamenti.log
+
+      - name: Genera un file di stato del repository
+        run: |
+          mkdir -p info
+          echo "# Stato del repository" > info/status.md
+          echo "Data aggiornamento: $(date '+%Y-%m-%d %H:%M:%S')" >> info/status.md
+          echo "Commit totali:" $(git rev-list --count HEAD) >> info/status.md
+          echo "Ultimo autore:" $(git log -1 --pretty=format:'%an') >> info/status.md
+
+      - name: Esegui commit e push
+        run: |
+          git add README.md logs/ info/
+          git commit -m "Aggiornamento automatico - $(date '+%Y-%m-%d')" || echo "Nessuna modifica da salvare"
           git push
