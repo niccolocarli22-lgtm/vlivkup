@@ -1,0 +1,19 @@
+name: Update Repository
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Esegui uno script di test
+        run: |
+          echo "✅ Workflow attivo su GitHub!"
+          echo "Puoi ora aggiungere qui i tuoi script personalizzati."
