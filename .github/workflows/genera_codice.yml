@@ -1,0 +1,33 @@
+name: Generatore automatico di codice
+
+on:
+  schedule:
+    - cron: '0 10 * * *'  # Ogni giorno alle 10:00 AM
+  workflow_dispatch:
+
+jobs:
+  generate-code:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Imposta autore Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+      - name: Genera codice dinamico
+        run: |
+          mkdir -p generated
+          echo "# Codice generato automaticamente" > generated/codice_generato.py
+          echo "# Ultimo aggiornamento: $(date '+%Y-%m-%d %H:%M:%S')" >> generated/codice_generato.py
+          echo "print('Ciao dal codice generato automaticamente!')" >> generated/codice_generato.py
+
+      - name: Salva modifiche su GitHub
+        run: |
+          git add generated/codice_generato.py
+          git commit -m "Aggiornamento automatico del file di codice - $(date '+%Y-%m-%d')" || echo "Nessuna modifica da salvare"
+          git push
