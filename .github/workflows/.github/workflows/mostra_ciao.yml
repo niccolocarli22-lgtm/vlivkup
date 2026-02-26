@@ -1,0 +1,29 @@
+name: Aggiorna programma Ciao
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # Ogni giorno alle 9:00
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Genera o aggiorna schermo blu
+        run: |
+          mkdir -p scripts
+          echo "import tkinter as tk\n\n" > scripts/schermo_blu.py
+          echo "def mostra_schermo():\n    finestra = tk.Tk()\n    finestra.title('Ciao!')\n    finestra.configure(bg='blue')\n    finestra.geometry('400x200')\n    messaggio = tk.Label(finestra, text='Ciao!', font=('Arial', 30), bg='blue', fg='white')\n    messaggio.pack(expand=True)\n    finestra.mainloop()" >> scripts/schermo_blu.py
+
+          echo "\n# Ultimo aggiornamento: $(date '+%Y-%m-%d %H:%M:%S')" >> scripts/schermo_blu.py
+
+          git add scripts/schermo_blu.py
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git commit -m "Aggiornato script 'Ciao!' - $(date '+%Y-%m-%d')" || echo "Nessuna modifica da salvare"
+          git push
